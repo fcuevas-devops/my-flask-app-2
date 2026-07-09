@@ -20,8 +20,8 @@ def obtener_clima():
         resp = requests.get(url, params=params, timeout=5)
         data = resp.json()
         return {'temp': data['current_weather']['temperature'], 'viento': data['current_weather']['windspeed']}
-    except:
-        return {'error': 'Fallo API'}
+    except Exception as e:
+        return {"error": str(e)},500
 
 @app.route('/clima')
 def ver_clima():
