@@ -19,13 +19,27 @@ def obtener_clima():
     try:
         resp = requests.get(url, params=params, timeout=5)
         data = resp.json()
-        return {'temp': data['current_weather']['temperature'], 'viento': data['current_weather']['windspeed']}
+        return {'temp': data["current_weather"]['temperature'], 'viento': data['current_weather']['windspeed']}
+    except Exception as e:
+        return {"error": str(e)},500
+
+def obtener_clima2():
+    url = "https://api.open-meteo.com/v1/forecast"
+    params = {'latitude': 40.4168, 'longitude': -3.7038, 'current_weather': True}
+    try:
+        resp = requests.get(url, params=params, timeout=5)
+        data = resp.json()
+        return data
     except Exception as e:
         return {"error": str(e)},500
 
 @app.route('/clima')
 def ver_clima():
     return jsonify(obtener_clima())
+
+@app.route('/clima2')
+def ver_clima2():
+    return jsonify(obtener_clima2())
 
 @app.route('/guardar', methods=['POST'])
 def guardar():
