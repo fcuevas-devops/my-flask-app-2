@@ -1,7 +1,9 @@
 import os
 import requests
+import json 
 from flask import Flask, jsonify
 import psycopg2
+
 
 app = Flask(__name__)
 
@@ -33,6 +35,47 @@ def obtener_clima2():
     except Exception as e:
         return {"error": str(e)},500
 
+
+
+def obtener_clima3(lat, lon):
+    url = "https://api.open-meteo.com/v1/forecast"
+    params = {
+        "latitude": lat,
+        "longitude": lon,
+        "current_weather": True
+    }
+    
+    print(f"🌍 Llamando a Open-Meteo para: {lat}, {lon}") # Log para depurar
+    
+    try:
+        response = requests.get(url, params=params, timeout=5)
+        
+        # Imprimir el código de estado y el texto crudo para ver el error real
+        print(f"Estado HTTP: {response.status_code}")
+        print(f"Respuesta cruda: {response.text[:200]}") # Imprime los primeros 200 caracteres
+        
+        response.raise_for_status() # Lanza error si el status es 4xx o 5xx
+        
+        data = response.json()
+        current = data['current_weather']
+        
+        return {
+            "latitud": lat,
+            "longitud": lon,
+            "temperatura": current['temperature'],
+            "viento": current['windspeed'],
+            "hora": current['time']
+        }
+    except requests.exceptions.Timeout:
+        return {"error": "Timeout: La API de Open-Meteo no respondió a tiempo."}
+    except requests.exceptions.RequestException as e:
+        # Aquí capturamos el error real de la red
+        return {"error": f"Error de red: {str(e)}", "detalles": response.text if 'response' in locals() else "Sin respuesta"}
+    except KeyError as e:
+        # Si la estructura de la respuesta de Open-Meteo cambió o no tiene 'current_weather'
+        return {"error": "Error de formato en la respuesta de Open-Meteo", "clave_faltante": str(e)}
+    
+
 @app.route('/clima')
 def ver_clima():
     return jsonify(obtener_clima())
@@ -40,6 +83,10 @@ def ver_clima():
 @app.route('/clima2')
 def ver_clima2():
     return jsonify(obtener_clima2())
+
+@app.route('/clima3')
+def ver_clima3():
+    return jsonify(obtener_clima3())
 
 @app.route('/guardar', methods=['POST'])
 def guardar():
