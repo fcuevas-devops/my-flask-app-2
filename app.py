@@ -7,6 +7,9 @@ import psycopg2
 
 app = Flask(__name__)
 
+# Obtener la API Key de las variables de entorno de Render
+API_KEY = os.environ.get('OPENWEATHER_API_KEY')    
+
 # Conectar a DB (Render inyecta DATABASE_URL automáticamente)
 def get_db_connection():
     db_url = os.environ.get('DATABASE_URL')
@@ -38,8 +41,16 @@ def obtener_clima2():
 
 
 def obtener_clima3(lat=40.4168, lon=-3.7038):
+    """
+    Obtiene el clima actual de las coordenadas usando OpenWeatherMap.
+    Requiere API Key configurada en las variables de entorno.
+    """
+    if not API_KEY:
+        return {"error": "Falta la API Key de OpenWeatherMap. Configúrala en Render."}   
+        
     url = "https://api.open-meteo.com/v1/forecast"
     params = {
+        "APPID": API_KEY,
         "latitude": lat,
         "longitude": lon,
         "current_weather": True
