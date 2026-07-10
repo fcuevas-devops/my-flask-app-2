@@ -37,7 +37,7 @@ def obtener_clima2():
 
 
 
-def obtener_clima3(lat, lon):
+def obtener_clima3(lat=40.4168, lon=-3.7038):
     url = "https://api.open-meteo.com/v1/forecast"
     params = {
         "latitude": lat,
